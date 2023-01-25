@@ -190,11 +190,13 @@ bool elaboraFile(std::string filename)
 	uint16_t buffer[256][320];				//Matrice che contiene l'immagine letta in binario			
 	uint16_t cubo[256][320];				//Matrice con numero di colonne ridotto (320/uB) utilizzata 
 	//  per memorizzare le bande scalate di 256 e ridotte del bias dark
-	float classi[256][20];					//Matrice che contiene le combinazioni lineari su specifiche bande.
+	float classi[256][76];					//Matrice che contiene le combinazioni lineari su specifiche bande.
 	bool allarme = false;					//Allarme notifica se viene riscontrato uno dei materiali ricercati
 	int sense = 0;							//Utilizzata per confrontare ---------------- 
 	int i, j, k;								//Variabili di supporto per i cicli for
-
+	int plastic_detected = 0;
+	float hyperclassiVet[256];
+	std::ofstream hyperclassi;
 	/*DEBUG: dichiarazioni dei file ofstreaming e apertura dei file per salvare le diverse matrici in file di testo
 	std::ofstream bufferFile;
 	std::ofstream cuboFile;
@@ -203,6 +205,20 @@ bool elaboraFile(std::string filename)
 	cuboFile.open("cubo.txt", std::ios_base::app);
 	classiFile.open("classi.txt", std::ios_base::app);
 	*/
+	hyperclassi.open("C:\\elaboraImg\\hyperclassi.txt", std::ios_base::app);
+	for (i = 0; i < 256; i++) hyperclassiVet[i] = 0; 
+	//Inizializzo a zero la matrice cubo
+	for (i = 0; i < 256; i++)
+		for (j = 0; j < 320; j++)
+			cubo[i][j] = 0;
+	//Inizializzo a zero la matrice classi
+	for (i = 0; i < 256; i++)
+		for (j = 0; j < 76; j++)
+			classi[i][j] = 0;
+	//Inizializzo a zero la matrice buffer
+	for (i = 0; i < 256; i++)
+		for (j = 0; j < 320; j++)
+			buffer[i][j] = 0;
 
 	std::ifstream is(filename, std::ifstream::binary);
 	if (is) {
@@ -219,22 +235,26 @@ bool elaboraFile(std::string filename)
 			bufferFile << "\n";
 		}
 		*/
-		for (j = 0; j <= int(320 / p.uB) - p.nBS; j++) { // ciclo sulle bande  
+		for (j = 0; j < int((320 / p.uB) - p.nBS); j++) { // ciclo sulle bande  
 
 			for (i = 0; i < 256; i++) { // ciclo sulla posizione spaziale
 				cubo[i][j] = (buffer[i][j * p.uB] / 256) - p.dark;
 				/*//cuboFile << cubo[i][j] << " "; DEBUG: usato per creare un file di testo della matrice cubo
 				//std::cout << cubo[i][j]<<"  "; DEBUG: usato per creare un file di testo della matrice cubo
 				*/
+				//std::cout << i << std::endl;
 			}
+			//std::cout << j << std::endl;
 			/*//std::cout << std::endl;			 DEBUG
 			//cuboFile << "\n";					 DEBUG
 			*/
 		}
-
+		sense = 0;
 		for (i = 0; i < 256; i++) { // ciclo sulla posizione spaziale
+			plastic_detected = 0;
 			for (j = 0; j < p.nC; j++) { //ciclo sui classificatori
 				classi[i][j] = p.W[j][0];
+				
 				for (k = 0; k < p.nF; k++) { // ciclo sulle features
 					classi[i][j] = classi[i][j] + (p.W[j][k + 1] * (float)(cubo[i][p.bu[j][k]]));
 				}
@@ -245,19 +265,36 @@ bool elaboraFile(std::string filename)
 				// all'interno dell'if se si lascia allarme = true e si commenta return true e' possibile creare tutta la matrice classi[i][j]
 				// se invece si vuole un esecuzione piu' veloce commentare allarme = true e attivare return true
 				if (classi[i][j] < 0) {
-					//OTTIMIZZAZIONE: l'utilizzo diretto del return fa risparmiare molte operazioni alla CPU 
-					//pero' la matrice classi non viene costruita.
-					// Se si vuole costruire la matrice classi, commentare return true ed attivare allarme = true
-					//allarme = true;
+					
 					sense++;
-					if (sense >= p.tolerance)
-						return true;
+					if (sense > p.tolerance) {
+						//OTTIMIZZAZIONE: l'utilizzo diretto del return fa risparmiare molte operazioni alla CPU 
+						//pero' la matrice classi non viene costruita.
+						// Se si vuole costruire la matrice classi, commentare return true ed attivare allarme = true
+						allarme = true;
+						plastic_detected = 1;
+						//return true;
+					}
 				}
 			}
+			if (classi[i][0] < 0) { //TODO:da sistemare per renderlo su piu' classificatori
+				hyperclassiVet[i] = 1;
+
+			}
+			else {
+				hyperclassiVet[i] = 0;
+			}
+			
 			/*
 			classiFile << "\n";					 DEBUG:usato per creare uno spazio nel file di testo di matrice classi
 			*/
 		}
+		std::cout << sense << std::endl;
+		// quando finisco di processare l'immagine ho una riga dell'hypercube. quindi la scrivo sul file hyperclassi
+		for (i = 0; i < 255; i++) {
+			hyperclassi << hyperclassiVet[i] << ",";
+		}
+		hyperclassi << hyperclassiVet[i] << std::endl;
 	}
 	return allarme;
 }
