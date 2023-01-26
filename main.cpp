@@ -322,7 +322,11 @@ bool elaboraFile(std::string filename)
 			classiFile << "\n";					 DEBUG:usato per creare uno spazio nel file di testo di matrice classi
 			*/
 		}
-		
+		// quando finisco di processare l'immagine ho una riga dell'hypercube. quindi la scrivo sul file hyperclassi
+		for (i = 0; i < 255; i++) {
+			hyperclassi << (int)hyperclassiVet[i] << ",";
+		}
+		hyperclassi << hyperclassiVet[i] << std::endl;
 	}
 	return allarme;
 }
