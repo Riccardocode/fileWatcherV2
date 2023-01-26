@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>    
 #include <fstream>     
 #include <sstream>
@@ -9,6 +10,10 @@
 #include "FileWatcher.h"
 #include "readParameter.h"
 #include "COM.h"
+#include <ctime>
+#include <iomanip>
+#include <chrono>
+
 
 
 
@@ -27,6 +32,7 @@ bool plasticflag = false;							// vera se almeno una delle immagini in frequenc
 int nplasticafrequence = 0;
 std::fstream my_file;
 std::fstream elaboraImg;
+std::string filenameElaboraImg;
 std::string parametri = "";
 int Counter = 0;
 std::string coordinate = "";
@@ -42,9 +48,24 @@ int nComRate = 57600;								// Baud (Bit) rate in bits/second
 int nComBits = 8;									// Number of bits per frame
 bool hasCOM = false;								//Usato per salvare su file in caso la COM non e' presente
 
+std::string timestamp() {
+	auto current_time = std::chrono::system_clock::now();
+	// Convert the time to a time_t value
+	auto time_t_time = std::chrono::system_clock::to_time_t(current_time);
+	// Convert the time_t value to a tm struct
+	std::tm tm_time = *std::localtime(&time_t_time);
+
+	// Create a stringstream object
+	std::stringstream timestamp;
+	// Format the time in the format "YYYY-MM-DD_HH-MM-SS"
+	timestamp << std::put_time(&tm_time, "%Y-%m-%d_%H-%M-%S");
+	// Create the file name
+	return timestamp.str();
+}
+
 int main() {
 	p = caricaParametri(COM, &frequencetosend);
-	
+	filenameElaboraImg = "C:\\elaboraImg\\" + timestamp() + "-elaboraImg.txt";
 	if (p.bu.size() != p.W.size()) {
 		std::cout << "The size W does not match with size bu";
 		return 2;
@@ -55,8 +76,10 @@ int main() {
 			return 2;
 		}
 	}
+	//Creazione Timestamp
 	
-	//TODO: Creare file inserendo il timestap nel nome
+
+	
 	//TODO: Inserire nuovamente la creazione del file per le classi con il timestamp
 	stampa(p);
 
@@ -137,8 +160,7 @@ int main() {
 						else coordinate = "0," + coordinate + "\n";
 
 						std::cout << "plastica trovata: " << nplasticafrequence << std::endl;
-
-						elaboraImg.open("C:\\elaboraImg\\elaboraImg.txt", std::ios::app);
+						elaboraImg.open(filenameElaboraImg, std::ios::app);
 						elaboraImg << coordinate;
 						std::cout << "ok coordinate salvate " << coordinate << std::endl;
 						elaboraImg.close();
