@@ -243,7 +243,8 @@ bool elaboraFile(std::string filename)
 	classiFile.open("classi.txt", std::ios_base::app);
 	*/
 
-	
+	hyperclassi.open("C:\\elaboraImg\\hyperclassi.txt", std::ios_base::app);
+	for (i = 0; i < 256; i++) hyperclassiVet[i] = 0;
 	//Inizializzazione matrici
 	for (i = 0; i < 256; i++)
 		for (j = 0; j < 320; j++)
