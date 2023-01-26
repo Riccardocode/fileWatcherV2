@@ -313,16 +313,20 @@ bool elaboraFile(std::string filename)
 						//OTTIMIZZAZIONE: l'utilizzo diretto del return fa risparmiare molte operazioni alla CPU 
 						//pero' la matrice classi non viene costruita.
 						// Se si vuole costruire la matrice classi, commentare return true ed attivare allarme = true
-						//allarme = true;
-						return true;
+						allarme = true;
+						//return true;
 					}
 				}
 			}
-			//hyperclassiVet[i] = classi[i][0];
-			if (classi[i][j] < 0) {
-				hyperclassiVet[i] = 1;
+			
+			for (j = 0; j < p.bu.size(); j++) {
+				if (classi[i][j] < 0) {
+					hyperclassiVet[i] = 1;
+					break;
+				}
+				else hyperclassiVet[i] = 0;
 			}
-			else hyperclassiVet[i] = 0;
+			
 			/*
 			classiFile << "\n";					 DEBUG:usato per creare uno spazio nel file di testo di matrice classi
 			*/
