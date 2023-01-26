@@ -232,7 +232,8 @@ bool elaboraFile(std::string filename)
 	bool allarme = false;					//Allarme notifica se viene riscontrato uno dei materiali ricercati
 	int sense = 0;							//Utilizzata per confrontare ---------------- 
 	int i, j, k;								//Variabili di supporto per i cicli for
-	
+	float hyperclassiVet[256];
+	std::ofstream hyperclassi;
 	/*DEBUG: dichiarazioni dei file ofstreaming e apertura dei file per salvare le diverse matrici in file di testo
 	std::ofstream bufferFile;
 	std::ofstream cuboFile;
