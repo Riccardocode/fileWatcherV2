@@ -44,6 +44,20 @@ bool hasCOM = false;								//Usato per salvare su file in caso la COM non e' pr
 
 int main() {
 	p = caricaParametri(COM, &frequencetosend);
+	
+	if (p.bu.size() != p.W.size()) {
+		std::cout << "The size W does not match with size bu";
+		return 2;
+	}
+	//da mettere in un for
+	for (int i = 0; i < p.bu.size(); i++) {
+		if (p.bu[i].size() != p.W[i].size() - 1) {
+			std::cout << "Il numero delle features del classificatore: "<< i<< " non e' coerente tra W e bu.";
+			return 2;
+		}
+	}
+	
+	
 	stampa(p);
 
 	//inizializza la COM, se non la trova scrive i valori su file
@@ -207,15 +221,15 @@ bool elaboraFile(std::string filename)
 	*/
 
 	
-	//Inizializzo a zero la matrice cubo
+	//Inizializzazione matrici
 	for (i = 0; i < 256; i++)
 		for (j = 0; j < 320; j++)
 			cubo[i][j] = 0;
-	//Inizializzo a zero la matrice classi
+	
 	for (i = 0; i < 256; i++)
 		for (j = 0; j < 76; j++)
 			classi[i][j] = 0;
-	//Inizializzo a zero la matrice buffer
+	
 	for (i = 0; i < 256; i++)
 		for (j = 0; j < 320; j++)
 			buffer[i][j] = 0;
@@ -251,10 +265,10 @@ bool elaboraFile(std::string filename)
 		}
 		sense = 0;
 		for (i = 0; i < 256; i++) { // ciclo sulla posizione spaziale
-			for (j = 0; j < p.nC; j++) { //ciclo sui classificatori
+			for (j = 0; j < p.bu.size(); j++) { //ciclo sui classificatori
 				classi[i][j] = p.W[j][0];
 				
-				for (k = 0; k < p.nF; k++) { // ciclo sulle features
+				for (k = 0; k < p.bu[j].size(); k++) { // ciclo sulle features
 					classi[i][j] = classi[i][j] + (p.W[j][k + 1] * (float)(cubo[i][p.bu[j][k]]));
 				}
 				/*
