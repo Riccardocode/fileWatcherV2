@@ -33,6 +33,8 @@ int nplasticafrequence = 0;
 std::fstream my_file;
 std::fstream elaboraImg;
 std::string filenameElaboraImg;
+std::ofstream hyperclassi;
+std::string filenameHyperClassi;
 std::string parametri = "";
 int Counter = 0;
 std::string coordinate = "";
@@ -66,6 +68,9 @@ std::string timestamp() {
 int main() {
 	p = caricaParametri(COM, &frequencetosend);
 	filenameElaboraImg = "C:\\elaboraImg\\" + timestamp() + "-elaboraImg.txt";
+	
+	filenameHyperClassi = "C:\\elaboraImg\\" + timestamp() + "-hyperclassi.txt";
+	hyperclassi.open(filenameHyperClassi, std::ios_base::app);
 	if (p.bu.size() != p.W.size()) {
 		std::cout << "The size W does not match with size bu";
 		return 2;
@@ -233,7 +238,7 @@ bool elaboraFile(std::string filename)
 	int sense = 0;							//Utilizzata per confrontare ---------------- 
 	int i, j, k;								//Variabili di supporto per i cicli for
 	float hyperclassiVet[256];
-	std::ofstream hyperclassi;
+	
 	/*DEBUG: dichiarazioni dei file ofstreaming e apertura dei file per salvare le diverse matrici in file di testo
 	std::ofstream bufferFile;
 	std::ofstream cuboFile;
@@ -243,7 +248,7 @@ bool elaboraFile(std::string filename)
 	classiFile.open("classi.txt", std::ios_base::app);
 	*/
 
-	hyperclassi.open("C:\\elaboraImg\\hyperclassi.txt", std::ios_base::app);
+	
 	for (i = 0; i < 256; i++) hyperclassiVet[i] = 0;
 	//Inizializzazione matrici
 	for (i = 0; i < 256; i++)
