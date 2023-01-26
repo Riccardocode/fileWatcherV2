@@ -49,7 +49,6 @@ int main() {
 		std::cout << "The size W does not match with size bu";
 		return 2;
 	}
-	//da mettere in un for
 	for (int i = 0; i < p.bu.size(); i++) {
 		if (p.bu[i].size() != p.W[i].size() - 1) {
 			std::cout << "Il numero delle features del classificatore: "<< i<< " non e' coerente tra W e bu.";
@@ -57,7 +56,8 @@ int main() {
 		}
 	}
 	
-	
+	//TODO: Creare file inserendo il timestap nel nome
+	//TODO: Inserire nuovamente la creazione del file per le classi con il timestamp
 	stampa(p);
 
 	//inizializza la COM, se non la trova scrive i valori su file

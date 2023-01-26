@@ -13,8 +13,6 @@ struct parameters {
     int dS;								//Numero di Colonne dell'immagine - considerando che si usa una Bobcat320 il numero di colonne e' 256
     int uB;								//Passo di sottocampionamento delle bande
     int dark;							//bias livello nero
-    int nF;								//Numero features usate <=40
-    int nC;								//Numero classificatori usati <=20
     int nBS;							//Numero di Bande saltate
     std::vector<std::vector<int>> bu;	//lista ordinata delle bande usate per ciascun classificatore: bu matrice di nC righe per nF indici, di valori compresi tra 1 e (dB div uB))
     std::vector<std::vector<float>> W;	//matrice W dei coefficienti delle combinazioni lineari, di dimensione nC * (nF+1)
@@ -27,8 +25,6 @@ void stampa(parameters p) { // stampa tutti i parametri caricati da file
     std::cout << "dS= " << p.dS << std::endl;
     std::cout << "uB= " << p.uB << std::endl;
     std::cout << "dark= " << p.dark << std::endl;
-    std::cout << "nF= " << p.nF << std::endl;
-    std::cout << "nC= " << p.nC << std::endl;
     std::cout << "nBS= " << p.nBS << std::endl;
     for (auto iq = p.bu.begin(); iq != p.bu.end(); iq++) {
         for (auto ic = iq->cbegin(); ic != iq->cend(); ic++) {
@@ -147,14 +143,7 @@ parameters caricaParametri(char* COMM, int* ftosend) {
                         stop = line.find("\n", start);
                         p.dark = stoi(line.substr(start, stop));
                     }
-                    else if (parametro == "nF") {
-                        stop = line.find("\n", start);
-                        p.nF = stoi(line.substr(start, stop));
-                    }
-                    else if (parametro == "nC") {
-                        stop = line.find("\n", start);
-                        p.nC = stoi(line.substr(start, stop));
-                    }
+                    
                     else if (parametro == "nBS") {
                         stop = line.find("\n", start);
                         p.nBS = stoi(line.substr(start, stop));
