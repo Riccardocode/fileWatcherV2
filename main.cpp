@@ -23,25 +23,27 @@ bool elaboraFile(std::string filename);
 std::string matchFile(std::string filename);
 std::vector<std::string> split(std::string txt, char delimiter);
 
-//Dichiarazione variabili globali di supporto
-bool plastica = false;
+//Dichiarazione variabili globali 
+//bool plastica = false;
 int nplastica = 0;									//Numero immagini con plastica
 int frequencetosend = 11;							//Numero di frequeza con il quale vengono inviati gli esiti della plastica. se non viene trovato un valore nel file mantiene questo valore
 int frequencesup = 0;
-bool plasticflag = false;							// vera se almeno una delle immagini in frequencetosend ha la plastica
+//bool plasticflag = false;							// vera se almeno una delle immagini in frequencetosend ha la plastica
 int nplasticafrequence = 0;
 std::fstream my_file;
 std::fstream elaboraImg;
+//filenameElaboraImg e hyperclassi permettono di costruire l'ipercubo come file txt.
 std::string filenameElaboraImg;
 std::ofstream hyperclassi;
 std::string filenameHyperClassi;
+
 std::string parametri = "";
 int Counter = 0;
 std::string coordinate = "";
 int coordinateInviate = 0;
-parameters p;
+parameters p;										//variabile struct che contiene i valori letti da file
 
-//Variabili per COM
+//Dichiarazione variabili per funzionamento COM
 //char COM[] = "\\\\.\\COM1";
 char COM[15];
 HANDLE handleCOM;
@@ -50,6 +52,8 @@ int nComRate = 57600;								// Baud (Bit) rate in bits/second
 int nComBits = 8;									// Number of bits per frame
 bool hasCOM = false;								//Usato per salvare su file in caso la COM non e' presente
 
+
+//restituisce una stringa contenente il timestamp   
 std::string timestamp() {
 	auto current_time = std::chrono::system_clock::now();
 	// Convert the time to a time_t value
@@ -66,30 +70,34 @@ std::string timestamp() {
 }
 
 int main() {
-	p = caricaParametri(COM, &frequencetosend);
-	filenameElaboraImg = "C:\\elaboraImg\\" + timestamp() + "-elaboraImg.txt";
+	p = caricaParametri(COM, &frequencetosend); 
 	
+	//La variabile filenameElaboraImg contiene il nome del file per memorizzare gli esiti delle immagini analizzare. Il file verraà creato solamente se la COM e' assente
+	filenameElaboraImg = "C:\\elaboraImg\\" + timestamp() + "-elaboraImg.txt"; 
 	filenameHyperClassi = "C:\\elaboraImg\\" + timestamp() + "-hyperclassi.txt";
 	hyperclassi.open(filenameHyperClassi, std::ios_base::app);
-	if (p.bu.size() != p.W.size()) {
+	
+	//Controllo dimensionale sui classificatori 
+	if (p.bu.size() != p.W.size()) {							
 		std::cout << "The size W does not match with size bu";
 		return 2;
 	}
+
+	//Controllo dimensionale sulle features
 	for (int i = 0; i < p.bu.size(); i++) {
 		if (p.bu[i].size() != p.W[i].size() - 1) {
 			std::cout << "Il numero delle features del classificatore: "<< i<< " non e' coerente tra W e bu.";
 			return 2;
 		}
 	}
-	//Creazione Timestamp
 	
-
-	
-	//TODO: Inserire nuovamente la creazione del file per le classi con il timestamp
 	stampa(p);
 
 	//inizializza la COM, se non la trova scrive i valori su file
 	hasCOM = createCOM(&handleCOM, COM);
+	
+	//divido il programma in due blocchi simili in modo da non dover eseguire questo if ad ogni ciclo.
+	//Se la comunicazione  e' stata stabilita' il programma rimarra' all'interno di questo blocco per tutta la sua esecuzione
 	if (hasCOM) {
 		purgePort(&handleCOM);
 		SetComParms(&handleCOM, nComRate, nComBits, timeout);
@@ -140,6 +148,7 @@ int main() {
 			}
 			});
 	}
+	//Se la comunicazione non e' stata stabilita' il programma rimarra' all'interno di questo blocco per tutta la sua esecuzione
 	else {
 		std::cout << "\nGli esiti della plastica verranno salvati su file" << std::endl;
 		// Filewatch monitora la cartella di destinazione delle immagini ogni 62 millisecondi per verificare se viene depositata una nuova immagine
@@ -218,10 +227,6 @@ std::string matchFile(std::string filename)
 		j = 0;
 		while (std::stoi(v1[st1 + j]) == std::stoi(v2[st2 + j])) j++;
 
-		/*
-		i file IMU letti che sono parecchi minuti indietro rispetto all'immagine, andrebbero spostati in un altra cartella
-		In questo modo si risparmiano cicli di CPU non rileggendo sempre gli stessi file
-		*/
 		distance = abs(std::stoi(v1[8]) - std::stoi(v2[7]));
 		if (j == 6 && distance < 80) return entry.path().string();
 	}
@@ -239,6 +244,7 @@ bool elaboraFile(std::string filename)
 	int i, j, k;								//Variabili di supporto per i cicli for
 	float hyperclassiVet[256];
 	
+	//nel seguito il codice con il tag DEBUG e' utilizzato per stampare su txt le varie matrici utilizzate per la plastic detection.
 	/*DEBUG: dichiarazioni dei file ofstreaming e apertura dei file per salvare le diverse matrici in file di testo
 	std::ofstream bufferFile;
 	std::ofstream cuboFile;
@@ -250,11 +256,12 @@ bool elaboraFile(std::string filename)
 
 	
 	for (i = 0; i < 256; i++) hyperclassiVet[i] = 0;
+	
 	//Inizializzazione matrici
 	for (i = 0; i < 256; i++)
 		for (j = 0; j < 320; j++)
 			cubo[i][j] = 0;
-	
+
 	for (i = 0; i < 256; i++)
 		for (j = 0; j < 76; j++)
 			classi[i][j] = 0;
@@ -282,14 +289,16 @@ bool elaboraFile(std::string filename)
 
 			for (i = 0; i < 256; i++) { // ciclo sulla posizione spaziale
 				cubo[i][j] = (buffer[i][j * p.uB] / 256) - p.dark;
+				//DEBUG:
 				/*//cuboFile << cubo[i][j] << " "; DEBUG: usato per creare un file di testo della matrice cubo
 				//std::cout << cubo[i][j]<<"  "; DEBUG: usato per creare un file di testo della matrice cubo
 				*/
 				//std::cout << i << std::endl;
 			}
+			//DEBUG:
 			//std::cout << j << std::endl;
-			/*//std::cout << std::endl;			 DEBUG
-			//cuboFile << "\n";					 DEBUG
+			/*//std::cout << std::endl;			 
+			//cuboFile << "\n";					 
 			*/
 		}
 		sense = 0;

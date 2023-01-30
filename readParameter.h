@@ -65,22 +65,6 @@ int numParam(std::string s) {
     return n;
 }
 
-//contamateriali non è più utilizzata
-int contamateriali(std::string s) {
-    std::fstream p;
-    std::string line;
-    int n = 0;
-    p.open(s, std::ios::in);
-    if (p.is_open()) {
-        while (getline(p, line)) {
-            if (line.substr(0, 2) != "//") n++;
-        }
-    }
-    p.close();
-    return n;
-}
-
-
 
 parameters caricaParametri(char* COMM, int* ftosend) {
     /**************************Dichiarazione variabili**************************/
@@ -109,7 +93,7 @@ parameters caricaParametri(char* COMM, int* ftosend) {
             if (line.substr(0, 8) == "Material") {          //se la riga inizia con il commento viene scartata
 
                 while (getline(parametri, line)) {
-                    if (line == "end") break;
+                    if (line == "end") break;               //il tag end fa uscire dal loop di lettora parametri
                     stop = line.find("=", 0);
                     parametro = line.substr(0, stop);
                     start = stop + 1;
@@ -161,9 +145,7 @@ parameters caricaParametri(char* COMM, int* ftosend) {
 
                         }
                         p.bu.push_back(buElementi);
-                        buElementi.clear();    // Ric:Bisogna svuotare il vettore in modo diverso?
-
-
+                        buElementi.clear();    
 
                     }
 
@@ -180,7 +162,7 @@ parameters caricaParametri(char* COMM, int* ftosend) {
 
                         }
                         p.W.push_back(wElementi);
-                        wElementi.clear();    // Ric:Bisogna svuotare il vettore in modo diverso?
+                        wElementi.clear();   
                     }
 
 
@@ -196,7 +178,5 @@ parameters caricaParametri(char* COMM, int* ftosend) {
     return p;
 
     /**************************Fine Lettura parametri da file**********************************/
-
-
 
 }
